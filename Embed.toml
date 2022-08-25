@@ -1,0 +1,12 @@
+[default.general]
+chip = "STM32WLE5JCIx"
+
+[default.rtt]
+enabled = false
+channels = [
+    { up = 0, name = "defmt_rtt", format = "Defmt" },
+]
+
+[default.gdb]
+enabled = true
+gdb_connection_string = "127.0.0.1:1337"
