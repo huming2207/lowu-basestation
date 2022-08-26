@@ -7,9 +7,8 @@ use lowu as _; // global logger + panicking-behavior + memory layout
     device = stm32wlxx_hal::pac,
 )]
 mod app {
-    // TODO: Add a monotonic if scheduling will be used
-    // #[monotonic(binds = SysTick, default = true)]
-    // type DwtMono = DwtSystick<80_000_000>;
+    use lowu::mono::MonoTimer;
+    use stm32wlxx_hal::pac;
 
     // Shared resources go here
     #[shared]
@@ -22,6 +21,9 @@ mod app {
     struct Local {
         // TODO: Add resources
     }
+
+    #[monotonic(binds = LPTIM1, default = true)]
+    type LPMonotonic = MonoTimer<pac::LPTIM1, 32768>;
 
     #[init]
     fn init(cx: init::Context) -> (Shared, Local, init::Monotonics) {
@@ -61,6 +63,8 @@ mod app {
         dp.RCC.ahb1enr.write(|w| w.dma1en().set_bit());
     
 
+        let monotonic: MonoTimer<pac::LPTIM1, 32768> = MonoTimer::new(dp.LPTIM1);
+
         // Setup the monotonic timer
         (
             Shared {
@@ -69,9 +73,7 @@ mod app {
             Local {
                 // Initialization of local resources go here
             },
-            init::Monotonics(
-                // Initialization of optional monotonic timers go here
-            ),
+            init::Monotonics(monotonic),
         )
     }
 
