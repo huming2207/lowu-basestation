@@ -18,6 +18,7 @@ cortex-m = "0.7.6"
 stm32wlxx-hal = { version = "0.6.1", features = ["rt", "stm32wle5", "chrono", "defmt"] }
 bbqueue = "0.5.1"
 fugit = "0.3.6"
+paste = "1.0"
 
 # cargo build/run
 [profile.dev]

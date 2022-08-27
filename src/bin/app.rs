@@ -23,7 +23,7 @@ mod app {
     }
 
     #[monotonic(binds = LPTIM1, default = true)]
-    type LPMonotonic = MonoTimer<pac::LPTIM1, 32768>;
+    type LPMonotonic = MonoTimer<pac::LPTIM1>;
 
     #[init]
     fn init(cx: init::Context) -> (Shared, Local, init::Monotonics) {
@@ -63,7 +63,7 @@ mod app {
         dp.RCC.ahb1enr.write(|w| w.dma1en().set_bit());
     
 
-        let monotonic: MonoTimer<pac::LPTIM1, 32768> = MonoTimer::new(dp.LPTIM1);
+        let monotonic: MonoTimer<pac::LPTIM1> = MonoTimer::<pac::LPTIM1>::new(dp.LPTIM1);
 
         // Setup the monotonic timer
         (
@@ -83,7 +83,7 @@ mod app {
         defmt::info!("idle");
 
         loop {
-            continue;
+            cortex_m::asm::wfi();
         }
     }
 }
