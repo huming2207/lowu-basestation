@@ -74,7 +74,13 @@ mod app {
             .enable_rx(gpioa.a3, cs)
             .enable_tx(gpioa.a2, cs);
 
-        let uart_p = lpuart.free();
+        let mut uart_p = lpuart.free();
+
+        // Something goes wrong here:
+        uart_p.cr1.modify(|_, w| {
+            w.rxneie().enabled();
+        });
+
 
         (
             Shared {
@@ -88,16 +94,16 @@ mod app {
         )
     }
 
-    #[task(binds = LPUART1, local = [uart_bb_prod, uart_bb_cons])]
-    fn lpuart_task(cx: lpuart_task::Context) {
-        
+    #[task(binds = LPUART1, local = [uart_bb_prod, uart_bb_cons], shared = [uart])]
+    fn lpuart_task(mut cx: lpuart_task::Context) {
+        cx.shared.uart.lock(|pre| {
+            let ret = (pre.rdr.read().rdr().bits() & 0xff) as u8;
+        })
     }
 
     // Optional idle, can be removed if not needed.
     #[idle]
     fn idle(_: idle::Context) -> ! {
-        defmt::info!("idle");
-
         loop {
             cortex_m::asm::wfi();
         }
