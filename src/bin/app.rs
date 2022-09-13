@@ -74,12 +74,9 @@ mod app {
             .enable_rx(gpioa.a3, cs)
             .enable_tx(gpioa.a2, cs);
 
-        let mut uart_p = lpuart.free();
-
-        // Something goes wrong here:
-        uart_p.cr1.modify(|_, w| {
-            w.rxneie().enabled();
-        });
+        let uart_p = lpuart.free();
+        uart_p.cr1.modify(|_, w| w.rxneie().set_bit()); // Enable Rx interrupt, clear by read the LPUART_RDR
+        uart_p.cr3.modify(|_, w| w.eie().set_bit()); // Enable error interrupt, clear by setting PECF/FECF/NECF/ORECF at LPUART_ICR
 
 
         (
