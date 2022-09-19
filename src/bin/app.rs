@@ -93,8 +93,19 @@ mod app {
 
     #[task(binds = LPUART1, local = [uart_bb_prod, uart_bb_cons], shared = [uart])]
     fn lpuart_task(mut cx: lpuart_task::Context) {
-        cx.shared.uart.lock(|pre| {
-            let ret = (pre.rdr.read().rdr().bits() & 0xff) as u8;
+        cx.shared.uart.lock(|uart| {
+            let isr = uart.isr.read().bits();
+            if (isr & 0b1111) != 0 {
+                defmt::error!("LPUART error: 0x{:02x}", isr);
+                uart.icr.write(|w| {
+                    w.pecf().set_bit();
+                    w.fecf().set_bit();
+                    w.ncf().set_bit();
+                    w.orecf().set_bit()
+                });
+            }
+
+            let ret = (uart.rdr.read().rdr().bits() & 0xff) as u8;
         })
     }
 
